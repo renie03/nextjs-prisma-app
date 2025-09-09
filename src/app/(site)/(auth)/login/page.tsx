@@ -4,11 +4,15 @@ import {
   handleGithubLogin,
   handleGoogleLogin,
 } from "@/lib/actions/userActions";
+import LoginForm from "@/components/site/LoginForm";
+import Link from "next/link";
 
 const LoginPage = () => {
   return (
     <div className="h-[calc(100vh-140px)] flex items-center justify-center">
       <div className="border border-borderColor rounded-lg p-5 flex flex-col">
+        <LoginForm />
+        <h1 className="text-center mb-3 mt-1">or</h1>
         <form action={handleGoogleLogin}>
           <button className="p-3 bg-slate-100 dark:bg-white text-black rounded-md w-full flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed">
             <FcGoogle size={20} /> Signin with Google
@@ -19,6 +23,12 @@ const LoginPage = () => {
             <FaGithub size={20} /> Signin with Github
           </button>
         </form>
+        <span className="text-sm text-textSoft mt-3">
+          Don&apos;t have an account?
+          <Link href="/register" className="ml-1 font-bold">
+            Register
+          </Link>
+        </span>
       </div>
     </div>
   );
