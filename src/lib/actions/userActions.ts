@@ -214,3 +214,213 @@ export const updateUser = async (
     };
   }
 };
+
+export const createUser = async (
+  previousState: { success: boolean; message: string },
+  data: unknown
+) => {
+  const validatedFields = registerSchema.safeParse(data);
+
+  if (!validatedFields.success) {
+    console.log(validatedFields.error.flatten().fieldErrors);
+    return {
+      success: false,
+      message: "",
+    };
+  }
+
+  const { username, email, name, password, image, isAdmin } =
+    validatedFields.data;
+
+  const session = await auth();
+  if (!session?.user?.isAdmin) {
+    return {
+      success: false,
+      message: "Admin only",
+    };
+  }
+
+  try {
+    const existingUsername = await prisma.user.findUnique({
+      where: { username },
+    });
+    if (existingUsername) {
+      return {
+        success: false,
+        message: "Username already exists",
+      };
+    }
+
+    const existingEmail = await prisma.user.findUnique({
+      where: { email },
+    });
+    if (existingEmail) {
+      return {
+        success: false,
+        message: "Email already exists",
+      };
+    }
+
+    const existingName = await prisma.user.findUnique({
+      where: { name },
+    });
+    if (existingName) {
+      return {
+        success: false,
+        message: "Name already exists",
+      };
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await prisma.user.create({
+      data: {
+        username,
+        name,
+        email,
+        password: hashedPassword,
+        image,
+        isAdmin: isAdmin === "true",
+      },
+    });
+
+    return { success: true, message: "User has been created" };
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      message: "Something went wrong",
+    };
+  }
+};
+
+export const updateUserAdmin = async (
+  previousState: { success: boolean; message: string },
+  data: unknown
+) => {
+  const validatedFields = userSchema.safeParse(data);
+
+  if (!validatedFields.success) {
+    console.log(validatedFields.error.flatten().fieldErrors);
+    return {
+      success: false,
+      message: "",
+    };
+  }
+
+  const { id, username, email, name, password, image, isAdmin } =
+    validatedFields.data;
+
+  const session = await auth();
+  if (!session?.user?.isAdmin) {
+    return {
+      success: false,
+      message: "Admin only",
+    };
+  }
+
+  try {
+    if (username) {
+      const existingUsername = await prisma.user.findUnique({
+        where: { username },
+      });
+      if (existingUsername && existingUsername.id !== id) {
+        return {
+          success: false,
+          message: "Username already exists",
+        };
+      }
+    }
+
+    if (email) {
+      const existingEmail = await prisma.user.findUnique({
+        where: { email },
+      });
+      if (existingEmail && existingEmail.id !== id) {
+        return {
+          success: false,
+          message: "Email already exists",
+        };
+      }
+    }
+
+    const existingName = await prisma.user.findUnique({
+      where: { name },
+    });
+    if (existingName && existingName.id !== id) {
+      return {
+        success: false,
+        message: "Name already exists",
+      };
+    }
+
+    const updateFields: {
+      username?: string;
+      email?: string;
+      name?: string;
+      image?: string;
+      password?: string;
+      isAdmin?: boolean;
+    } = {
+      username,
+      email,
+      name,
+      image,
+      isAdmin: isAdmin === "true",
+    };
+
+    // Hash password if provided and not just whitespace
+    if (password && password.trim() !== "") {
+      updateFields.password = await bcrypt.hash(password, 10);
+    }
+
+    await prisma.user.update({
+      where: { id },
+      data: updateFields,
+    });
+
+    return { success: true, message: "User has been updated" };
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      message: "Something went wrong",
+    };
+  }
+};
+
+export const deleteUser = async (
+  previousState: { success: boolean; message: string },
+  formData: FormData
+) => {
+  const id = formData.get("id") as string;
+
+  const session = await auth();
+  if (!session?.user?.isAdmin) {
+    return {
+      success: false,
+      message: "Admin only",
+    };
+  }
+
+  if (!id) {
+    return {
+      success: false,
+      message: "Invalid user ID",
+    };
+  }
+
+  try {
+    await prisma.user.delete({
+      where: { id },
+    });
+
+    return { success: true, message: "User has been deleted" };
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      message: "Something went wrong",
+    };
+  }
+};
