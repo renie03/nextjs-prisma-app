@@ -2,7 +2,7 @@ import Card from "@/components/admin/Card";
 import Transactions from "@/components/admin/Transactions";
 import Chart from "@/components/admin/Chart";
 
-export const cards = [
+const cards = [
   {
     id: 1,
     title: "Total Users",
