@@ -5,6 +5,8 @@ import { format } from "timeago.js";
 import { notFound } from "next/navigation";
 import ViewCounter from "@/components/site/ViewCounter";
 import RelatedPosts from "@/components/site/RelatedPosts";
+import Comments from "@/components/site/Comments";
+import { auth } from "@/lib/auth";
 
 type PostWithUser = Post & {
   user: { name: string | null; image: string | null };
@@ -15,6 +17,7 @@ const SinglePostPage = async ({
 }: {
   params: Promise<{ id: string }>;
 }) => {
+  const session = await auth();
   const { id } = await params;
 
   const post: PostWithUser | null = await prisma.post.findUnique({
@@ -65,6 +68,8 @@ const SinglePostPage = async ({
       </div>
       <hr className="border-hrColor my-5" />
       <RelatedPosts category={post.category} postId={id} />
+      <hr className="border-hrColor my-5" />
+      <Comments postId={id} session={session} />
     </div>
   );
 };
