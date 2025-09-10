@@ -68,6 +68,7 @@ const AdminUsersPage = async ({
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (page - 1),
     }),
+
     prisma.user.count({
       where: query,
     }),

@@ -56,6 +56,7 @@ const AdminPostsPage = async ({
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (page - 1),
     }),
+
     prisma.post.count({
       where: query,
     }),
